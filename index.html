@@ -18,7 +18,7 @@
   --metal:linear-gradient(180deg,#F4F8FA 0%,#B6C2CA 48%,#E4EBEF 100%);
   --danger:#FF7A72;
   /* สีสถานะการซ่อม (คงเดิม) */
-  --s-received:#93A8AC; --s-check:#63B3ED; --s-wait:#ECC94B; --s-fix:#B794F4; --s-done:#68D391; --s-out:#E8F0EF;
+  --s-received:#F7FAFA; --s-check:#63B3ED; --s-wait:#ECC94B; --s-fix:#B794F4; --s-done:#2F6FEB; --s-out:#68D391;
   --font:"Prompt","IBM Plex Sans Thai",Tahoma,sans-serif; --tech:"Orbitron","Prompt",sans-serif;
 }
 *{box-sizing:border-box}
@@ -239,6 +239,8 @@ button.primary.danger-fill{background:linear-gradient(180deg,#FF8A82,#E5483F);co
       <button type="button" id="eAddPart">+ เพิ่มรายการ</button>
       <label for="ePrice">ราคาค่าซ่อม (บาท)</label>
       <input id="ePrice" type="number" min="0" step="any" inputmode="decimal" placeholder="เช่น 450 (ยังไม่ทราบให้เว้นว่าง)">
+      <label for="eNote">หมายเหตุ <span class="meta">(บันทึกในคอลัมน์หมายเหตุของชีต "งานซ่อม")</span></label>
+      <textarea id="eNote" maxlength="500" placeholder="เช่น ลูกค้าขอเลื่อนรับเครื่อง (เว้นว่างได้)"></textarea>
       <label for="eProduct">สินค้า</label>
       <input id="eProduct" required>
       <div class="row">
@@ -280,20 +282,24 @@ button.primary.danger-fill{background:linear-gradient(180deg,#FF8A82,#E5483F);co
 
 <script>
 const STATUSES = [
-  {k:"received", t:"รับเครื่องแล้ว", c:"var(--s-received)"},
+  {k:"received", t:"รับเครื่อง", c:"var(--s-received)"},
   {k:"check",    t:"กำลังตรวจเช็ค", c:"var(--s-check)"},
+  {k:"sendUthit", t:"ส่งช่างอุทิศ",   c:"#B7793F"},
+  {k:"sendNid",  t:"ส่งช่างนิด",     c:"#F687B3"},
   {k:"wait",     t:"รออะไหล่",       c:"var(--s-wait)"},
   {k:"fix",      t:"กำลังซ่อม",      c:"var(--s-fix)"},
-  {k:"done",     t:"ซ่อมเสร็จ รอรับเครื่อง", c:"var(--s-done)"},
-  {k:"out",      t:"ส่งมอบแล้ว",     c:"var(--s-out)"}
+  {k:"done",     t:"ซ่อมเสร็จแล้ว", c:"var(--s-done)"},
+  {k:"return",   t:"คืนเครื่อง",     c:"#FC8181"},
+  {k:"out",      t:"ลูกค้ารับเครื่องแล้ว", c:"var(--s-out)"}
 ];
 const $ = id => document.getElementById(id);
+const noteHtml = n => esc(n).replace(/\r?\n/g, "<br>");
 const st = k => STATUSES.find(s => s.k === k) || STATUSES[0];
 let jobs = [];
 let editingTrack = null;
 
 /* ---------- เชื่อมต่อ Google Sheet ผ่าน Google Apps Script ---------- */
-const API_URL = "https://script.google.com/macros/s/AKfycbyEPHVIHcnl4WuAMw5gwF1PF1-8JHImjxtS_ohcyAaOBghzar_Qjo6xdnenyaEnmPxCwg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbzLnuqndD8movzeLq4k737RmnaFqxPiC8baBES0wo-puMwy5xN96Rh5aLxh3EQ9shRodg/exec";
 let PIN = "";
 try { PIN = sessionStorage.getItem("staffPin") || ""; } catch(e){}
 
@@ -416,6 +422,7 @@ function jobHTML(j, withActions){
     <p><strong>${esc(devName(j))}</strong></p>
     <p>อาการ: ${esc(j.symptom)}</p>
     ${j.accessories ? `<p>อุปกรณ์ที่นำมาด้วย: ${esc(j.accessories)}</p>` : ""}
+    ${j.note ? `<p class="jobnote">หมายเหตุ: ${noteHtml(j.note)}</p>` : ""}
     ${partsHTML(j)}
     ${priceLine(j)}
     <p class="meta">นำมาซ่อม ${fmtDate(j.date)} · โทร ${esc(j.phone)}</p>
@@ -426,7 +433,7 @@ function render(){
   const q = $("q").value.trim().toLowerCase(), f = $("filter").value;
   const rows = jobs.filter(j =>
     (!f || j.status === f) &&
-    (!q || [j.track,j.product,j.brand,j.model,j.phone,j.symptom,j.accessories || ""].some(v => v.toLowerCase().includes(q))));
+    (!q || [j.track,j.product,j.brand,j.model,j.phone,j.symptom,j.accessories || "",j.note || ""].some(v => v.toLowerCase().includes(q))));
   $("count").textContent = `(${rows.length}/${jobs.length})`;
   $("list").innerHTML = rows.length ? rows.map(j => jobHTML(j,true)).join("")
     : `<div class="empty">${jobs.length ? "ไม่พบงานที่ตรงกับการค้นหา" : "ยังไม่มีงานซ่อม กรอกฟอร์มทางซ้ายเพื่อรับงานแรก"}</div>`;
@@ -444,11 +451,12 @@ function resultHTML(j){
     <div class="job-top"><span class="track">${esc(j.track)}</span><span class="badge" style="--c:${s.c}">${s.t}</span></div>
     <p><strong>${esc(devName(j))}</strong> — ${esc(j.symptom)}</p>
     ${j.accessories ? `<p>อุปกรณ์ที่นำมาด้วย: ${esc(j.accessories)}</p>` : ""}
+    ${j.note ? `<p class="jobnote">หมายเหตุ: ${noteHtml(j.note)}</p>` : ""}
     <div class="steps" aria-hidden="true">${STATUSES.map((x, i) => `<i class="${i <= STATUSES.indexOf(s) ? "on" : ""}"></i>`).join("")}</div>
     ${partsHTML(j)}
     ${priceLine(j)}
     <p class="meta">นำมาซ่อม ${fmtDate(j.date)} · โทร ${esc(j.phone)}</p>
-    <ul class="timeline">${[...j.history].reverse().map(h => `<li style="--c:${st(h.status).c}"><strong>${st(h.status).t}</strong> <span class="meta">${fmtTime(h.ts)}</span>${h.note ? "<br>"+esc(h.note) : ""}</li>`).join("")}</ul>
+    <ul class="timeline">${[...j.history].reverse().map(h => `<li style="--c:${st(h.status).c}"><strong>${st(h.status).t}</strong> <span class="meta">${fmtTime(h.ts)}</span>${h.note ? "<br>"+noteHtml(h.note) : ""}</li>`).join("")}</ul>
     <div class="actions"><button type="button" class="primary" data-edit="${esc(j.track)}">อัพเดทสถานะ</button>${callBtn(j)}</div>
   </div>`;
 }
@@ -486,11 +494,12 @@ async function openEdit(track){
   let j; try { j = await staff("get", {track}); } catch(e){ toast(e.message); return; }
   editingTrack = track;
   $("eTrackLabel").textContent = j.track;
+  $("eNote").value = j.note || "";
   $("eStatus").value = j.status; $("ePrice").value = (j.price === null || j.price === undefined) ? "" : j.price;
   $("eProduct").value = j.product; $("eBrand").value = j.brand; $("eModel").value = j.model; $("eSymptom").value = j.symptom; $("eAccessories").value = j.accessories || "";
   $("eDate").value = j.date; $("ePhone").value = j.phone; setCall($("eCall"), j.phone);
   $("eHistory").innerHTML = [...j.history].reverse().map(h =>
-    `<li style="--c:${st(h.status).c}"><strong>${st(h.status).t}</strong> <span class="meta">${fmtTime(h.ts)}</span>${h.note ? "<br>"+esc(h.note) : ""}</li>`).join("");
+    `<li style="--c:${st(h.status).c}"><strong>${st(h.status).t}</strong> <span class="meta">${fmtTime(h.ts)}</span>${h.note ? "<br>"+noteHtml(h.note) : ""}</li>`).join("");
   $("eParts").innerHTML = "";
   (j.parts && j.parts.length ? j.parts : [{name:"", qty:1}]).forEach(p => addPartRow(p.name, p.qty));
   $("dlg").showModal();
@@ -499,7 +508,7 @@ $("editForm").addEventListener("submit", async e => {
   e.preventDefault();
   try {
     await staff("update", {track: editingTrack,
-      status: $("eStatus").value, parts: readParts(), price: $("ePrice").value, product: $("eProduct").value, brand: $("eBrand").value, model: $("eModel").value,
+      status: $("eStatus").value, note: $("eNote").value, parts: readParts(), price: $("ePrice").value, product: $("eProduct").value, brand: $("eBrand").value, model: $("eModel").value,
       symptom: $("eSymptom").value, accessories: $("eAccessories").value, date: $("eDate").value, phone: $("ePhone").value
     });
     await refresh(); $("dlg").close(); toast("อัพเดทแล้ว");
