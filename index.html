@@ -45,8 +45,9 @@ h2{font-size:1.15rem;margin:0 0 14px;font-weight:600}
 button,.btn{white-space:nowrap;font:inherit;cursor:pointer;border:1px solid var(--line-2);background:transparent;color:var(--ink);padding:9px 16px;border-radius:10px;transition:border-color .15s,box-shadow .15s,transform .05s}
 button:hover{border-color:var(--neon);box-shadow:0 0 0 3px var(--neon-soft)}
 button:active{transform:translateY(1px)}
-button.primary{background:linear-gradient(180deg,#46E2FF,#14B6E3);color:#031117;border-color:transparent;font-weight:700;box-shadow:var(--glow)}
-button.primary:hover{box-shadow:0 0 26px rgba(39,216,255,.6)}
+button.primary,a.btn.primary{background:linear-gradient(180deg,#46E2FF,#14B6E3);color:#031117;border-color:transparent;font-weight:700;box-shadow:var(--glow)}
+button.primary:hover,a.btn.primary:hover{box-shadow:0 0 26px rgba(39,216,255,.6)}
+a.btn{display:inline-flex;align-items:center;gap:6px;text-decoration:none}
 button.danger{color:var(--danger);border-color:rgba(255,122,114,.4)}
 button.danger:hover{border-color:var(--danger);box-shadow:0 0 0 3px rgba(255,122,114,.15)}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--neon);outline-offset:2px}
@@ -212,6 +213,7 @@ button.primary.danger-fill{background:linear-gradient(180deg,#FF8A82,#E5483F);co
       <div class="pagehead">
         <h2>รายการงานซ่อม <span id="count" class="meta"></span></h2>
         <div class="tools">
+          <a class="btn primary" href="#/new">+ รับงานซ่อมใหม่</a>
           <button id="btnExport" type="button">ส่งออกข้อมูล (JSON)</button>
           <button id="btnImport" type="button">นำเข้าข้อมูล</button>
           <input id="fileImport" type="file" accept="application/json" hidden>
