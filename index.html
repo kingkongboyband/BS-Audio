@@ -117,7 +117,7 @@ textarea{resize:vertical;min-height:76px}
 .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:34px 8px}
 
 /* แถบความคืบหน้า + ประวัติ */
-.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:10px 0 4px}
+.steps{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;margin:10px 0 4px}
 .steps i{height:5px;border-radius:3px;background:var(--line-2)}
 .steps i.on{background:var(--c);box-shadow:0 0 8px var(--c)}
 .timeline{list-style:none;margin:12px 0 0;padding:0 0 0 14px;border-left:2px solid var(--line-2)}
@@ -284,6 +284,7 @@ button.primary.danger-fill{background:linear-gradient(180deg,#FF8A82,#E5483F);co
 const STATUSES = [
   {k:"received", t:"รับเครื่อง", c:"var(--s-received)"},
   {k:"check",    t:"กำลังตรวจเช็ค", c:"var(--s-check)"},
+  {k:"normal",   t:"ปกติ",          c:"#4FD1C5"},
   {k:"sendUthit", t:"ส่งช่างอุทิศ",   c:"#B7793F"},
   {k:"sendNid",  t:"ส่งช่างนิด",     c:"#F687B3"},
   {k:"wait",     t:"รออะไหล่",       c:"var(--s-wait)"},
@@ -299,7 +300,7 @@ let jobs = [];
 let editingTrack = null;
 
 /* ---------- เชื่อมต่อ Google Sheet ผ่าน Google Apps Script ---------- */
-const API_URL = "https://script.google.com/macros/s/AKfycbzLnuqndD8movzeLq4k737RmnaFqxPiC8baBES0wo-puMwy5xN96Rh5aLxh3EQ9shRodg/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwZMfaTBu-wBP-wKYP5dlqOPtlKMa-rDzD9UNjbVcSSkGpSkW4GUHzG7V-Xriao47gWrA/exec";
 let PIN = "";
 try { PIN = sessionStorage.getItem("staffPin") || ""; } catch(e){}
 
