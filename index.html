@@ -287,6 +287,7 @@ const STATUSES = [
   {k:"normal",   t:"ปกติ",          c:"#4FD1C5"},
   {k:"sendUthit", t:"ส่งช่างอุทิศ",   c:"#B7793F"},
   {k:"sendNid",  t:"ส่งช่างนิด",     c:"#F687B3"},
+  {k:"sendCompany", t:"ส่งบริษัท",   c:"#F6AD55"},
   {k:"wait",     t:"รออะไหล่",       c:"var(--s-wait)"},
   {k:"fix",      t:"กำลังซ่อม",      c:"var(--s-fix)"},
   {k:"done",     t:"ซ่อมเสร็จแล้ว", c:"var(--s-done)"},
@@ -300,7 +301,7 @@ let jobs = [];
 let editingTrack = null;
 
 /* ---------- เชื่อมต่อ Google Sheet ผ่าน Google Apps Script ---------- */
-const API_URL = "https://script.google.com/macros/s/AKfycbwZMfaTBu-wBP-wKYP5dlqOPtlKMa-rDzD9UNjbVcSSkGpSkW4GUHzG7V-Xriao47gWrA/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwxGkiWtDo8BuFqe2TkGNNN7nMxwgb0iqLEDS3syTILSVfPAfmfbWYcU92Oi5eZSIMhtQ/exec";
 let PIN = "";
 try { PIN = sessionStorage.getItem("staffPin") || ""; } catch(e){}
 
