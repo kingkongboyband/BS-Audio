@@ -97,7 +97,7 @@ textarea{resize:vertical;min-height:76px}
 
 /* รายการงาน */
 .listhead{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.listhead input{flex:2 1 200px}.listhead select{flex:1 1 160px}
+.listhead input{flex:2 1 200px}.listhead select{flex:1 1 160px}.listhead #sort{flex:1 1 170px}
 #list{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:12px}
 .job,.result{background:var(--field);border:1px solid var(--line);border-left:5px solid var(--c,var(--line-2));border-radius:12px;padding:14px 14px 12px}
 .result{background:rgba(3,8,12,.75);border-color:var(--line-2);border-left-color:var(--c)}
@@ -222,6 +222,11 @@ button.primary.danger-fill{background:linear-gradient(180deg,#FF8A82,#E5483F);co
       <div class="listhead">
         <input id="q" type="search" placeholder="ค้นหา เลขแทร็ก / สินค้า / ยี่ห้อ / รุ่น / เบอร์โทร" aria-label="ค้นหา">
         <select id="filter" aria-label="กรองสถานะ"></select>
+        <select id="sort" aria-label="เรียงลำดับเลขแทร็ก">
+          <option value="">เรียงตามงานล่าสุด</option>
+          <option value="desc">เลขแทร็ก มากไปน้อย</option>
+          <option value="asc">เลขแทร็ก น้อยไปมาก</option>
+        </select>
       </div>
       <div id="list"></div>
     </section>
@@ -436,12 +441,15 @@ function render(){
   const rows = jobs.filter(j =>
     (!f || j.status === f) &&
     (!q || [j.track,j.product,j.brand,j.model,j.phone,j.symptom,j.accessories || "",j.note || ""].some(v => v.toLowerCase().includes(q))));
+  const so = $("sort").value;
+  if (so) rows.sort((a, b) => (Number(a.track) - Number(b.track)) * (so === "asc" ? 1 : -1));
   $("count").textContent = `(${rows.length}/${jobs.length})`;
   $("list").innerHTML = rows.length ? rows.map(j => jobHTML(j,true)).join("")
     : `<div class="empty">${jobs.length ? "ไม่พบงานที่ตรงกับการค้นหา" : "ยังไม่มีงานซ่อม กรอกฟอร์มทางซ้ายเพื่อรับงานแรก"}</div>`;
 }
 $("q").addEventListener("input", render);
 $("filter").addEventListener("change", render);
+$("sort").addEventListener("change", render);
 $("list").addEventListener("click", e => {
   const b = e.target.closest("[data-edit]"); if (b) openEdit(b.dataset.edit);
 });
